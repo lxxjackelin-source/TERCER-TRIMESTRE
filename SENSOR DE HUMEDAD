@@ -1,0 +1,62 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <DHT.h>
+
+const char* ssid = "RED MECATRONICA";
+const char* password = "MECA2026@.";
+
+const char* serverAddress = "https://api.tago.io/data";
+const char* tokenHeader = "c32aef81-991c-4e1b-960e-148f9c349c62";
+
+HTTPClient client;
+
+#define DHTPIN 5
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  Serial.begin(115200);
+
+  WiFi.begin(ssid, password);
+  Serial.print("Conectando");
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nConectado!");
+  Serial.println(WiFi.localIP());
+
+  dht.begin();
+}
+
+void loop() {
+  delay(15000);
+
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  float hic = dht.computeHeatIndex(t, h, false);
+
+  if (isnan(h) || isnan(t)) {
+    Serial.println("Error en DHT");
+    return;
+  }
+
+  String postData = "[";
+  postData += "{\"variable\":\"temperatura\",\"value\":" + String(t) + "},";
+  postData += "{\"variable\":\"humedad\",\"value\":" + String(h) + "},";
+  postData += "{\"variable\":\"indice_calor\",\"value\":" + String(hic) + "}";
+  postData += "]";
+
+  client.begin(serverAddress);
+  client.addHeader("Content-Type", "application/json");
+  client.addHeader("Device-Token", tokenHeader);
+
+  int statusCode = client.POST(postData);
+
+  Serial.print("Codigo HTTP: ");
+  Serial.println(statusCode);
+
+  client.end();
+}
