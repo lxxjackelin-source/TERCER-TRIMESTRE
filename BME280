@@ -1,0 +1,48 @@
+#include <TFT_eSPI.h>       // Librería de la pantalla
+#include <Adafruit_BME280.h> // Librería del sensor
+
+TFT_eSPI tft = TFT_eSPI();  // Crear objeto de pantalla
+Adafruit_BME280 bme;        // Crear objeto del sensor
+
+void setup() {
+  Serial.begin(9600);
+  
+  // Inicializar Pantalla
+  tft.init();
+  tft.setRotation(1);       // Rotar pantalla a horizontal
+  tft.fillScreen(TFT_BLACK); // Fondo negro
+  
+  // Inicializar Sensor
+  if (!bme.begin(0x76)) {
+    tft.setTextColor(TFT_RED);
+    tft.drawString("Error: Sensor no hallado", 10, 10, 2);
+    while (1);
+  }
+
+  tft.setTextColor(TFT_CYAN);
+  tft.drawString("MONITOR AMBIENTAL", 50, 10, 4);
+}
+
+void loop() {
+  // Leer datos
+  float temp = bme.readTemperature();
+  float hum = bme.readHumidity();
+  float pres = bme.readPressure() / 100.0F;
+
+  // Mostrar en Pantalla
+  tft.setTextColor(TFT_WHITE, TFT_BLACK); // Texto blanco con fondo negro (para borrar lo anterior)
+  
+  tft.drawString("Temp:", 10, 60, 4);
+  tft.drawFloat(temp, 1, 120, 60, 4);
+  tft.drawString("C", 200, 60, 4);
+
+  tft.drawString("Humedad:", 10, 100, 4);
+  tft.drawFloat(hum, 1, 150, 100, 4);
+  tft.drawString("%", 200, 100, 4);
+
+  tft.drawString("Presion:", 10, 140, 4);
+  tft.drawFloat(pres, 1, 120, 140, 4);
+  tft.drawString("hPa", 200, 140, 2);
+
+  delay(2000); // Actualizar cada 2 segundos
+}
