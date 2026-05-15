@@ -1,0 +1,38 @@
+// Definición de pines
+const int Trig = 9;
+const int Echo = 8;
+
+void setup() {
+  Serial.begin(9600);    // Comunicación serial para ver los datos
+  pinMode(Trig, OUTPUT); // Pin de salida para el pulso
+  pinMode(Echo, INPUT);  // Pin de entrada para recibir el eco
+}
+
+void loop() {
+  long duracion;
+  long distancia;
+
+  // Limpiamos el pin Trig enviando un pulso bajo
+  digitalWrite(Trig, LOW);
+  delayMicroseconds(4);
+
+  // Enviamos el pulso de activación (Trig) durante 10 microsegundos
+  digitalWrite(Trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(Trig, LOW);
+
+  // Medimos el tiempo que tarda en llegar el pulso al pin Echo
+  duracion = pulseIn(Echo, HIGH);
+
+  // Calculamos la distancia en centímetros
+  // La velocidad del sonido es 343 m/s o 0.0343 cm/us
+  // Dividimos por 2 porque el sonido va y vuelve
+  distancia = duracion * 0.034 / 2;
+
+  // Imprimimos el resultado en el Monitor Serie
+  Serial.print("Distancia: ");
+  Serial.print(distancia);
+  Serial.println(" cm");
+
+  delay(500); // Pausa de medio segundo para no saturar el monitor
+}
